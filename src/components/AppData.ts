@@ -3,17 +3,17 @@ import { Model } from "./base/Model";
 import { IContacts } from "./common/Contacts";
 
 export type CatalogChangeEvent = {
-    catalog: WebItem[]
+    catalog: IWebItem[]
 };
 
-export class WebItem extends Model<IWebItem>{
-    id: string;
-    description: string;
-    image: string;
-    title: string;
-    category: string;
-    price: number | null;
-}
+// export class WebItem extends Model<IWebItem>{
+//     id: string;
+//     description: string;
+//     image: string;
+//     title: string;
+//     category: string;
+//     price: number | null;
+// }
 
 export class AppState extends Model<IAppState> {
     basket: IWebItem[] = [];
@@ -61,16 +61,16 @@ export class AppState extends Model<IAppState> {
     }
 
     setCatalog(items: IWebItem[]) {
-        this.catalog = items.map(item => new WebItem(item, this.events));
+        this.catalog = items;
         this.emitChanges('items:changed', { catalog: this.catalog });
     }
 
-    setPreview(item: WebItem) {
+    setPreview(item: IWebItem) {
         this.preview = item.id;
         this.emitChanges('preview:changed', item);
     }
 
-    contentBasket(): IWebItem[] {
+    checkContentBasket(): IWebItem[] {
         return this.basket
     }
 
@@ -80,7 +80,7 @@ export class AppState extends Model<IAppState> {
 
     setOrder(): void {
         this.order.total = this.getTotal();
-        this.order.items = this.contentBasket().map((item) => item.id);
+        this.order.items = this.checkContentBasket().map((item) => item.id);
     }
 
     setOrderField(field: keyof Partial<IContacts>, value: string): void {
@@ -88,22 +88,22 @@ export class AppState extends Model<IAppState> {
         this.validateOrderForm();
     }
 
-    dataPayment(itemPayment: PaymentMethod): void {
+    setPayment(itemPayment: PaymentMethod): void {
         this.order.payment = itemPayment;
         this.validateOrder();
     }
 
-    dataAddress(itemAddress: string): void {
+    setAddress(itemAddress: string): void {
         this.order.address = itemAddress;
         this.validateOrder();
     }
 
-    dataEmail(itemEmail: string): void {
+    setEmail(itemEmail: string): void {
         this.order.email = itemEmail;
         this.validateOrderForm();
     }
 
-    dataPhone(itemPhone: string): void {
+    setPhone(itemPhone: string): void {
         this.order.phone = itemPhone;
         this.validateOrderForm();
     }

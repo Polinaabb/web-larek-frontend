@@ -80,7 +80,11 @@ export class Card extends Component<ICard> {
 
     set category(value: string) {
         this.setText(this._category, value)
-        this._category.classList.add('card__category' + categoryCard[value])
+        this.addClass(this._category, 'card__category' + categoryCard[value]);
+    }
+
+    set button(value: string) {
+        this.setText(this._button, value)
     }
 }
 

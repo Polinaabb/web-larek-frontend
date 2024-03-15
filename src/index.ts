@@ -4,7 +4,7 @@ import { ensureElement, createElement, cloneTemplate } from './utils/utils';
 import { EventEmitter } from './components/base/events';
 import { API_URL, CDN_URL } from "./utils/constants";
 import { LarekAPI } from './components/LarekAPI';
-import { AppState, WebItem, CatalogChangeEvent } from './components/AppData';
+import { AppState, CatalogChangeEvent } from './components/AppData';
 import { Page } from './components/Page';
 import { Card, CardBasket } from './components/common/Card';
 import { Modal } from './components/common/Modal';
@@ -12,7 +12,7 @@ import { Basket } from './components/common/Basket';
 import { Order } from './components/common/Order';
 import { Contacts, IContacts } from './components/common/Contacts';
 import { Success } from './components/common/Success';
-import { PaymentMethod, IOrder, IOrderResult } from './types/index'
+import { PaymentMethod, IOrder, IWebItem } from './types/index'
 
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
@@ -47,15 +47,15 @@ events.on<CatalogChangeEvent>('items:changed', () => {
         });
     });
 
-    page.counter = appData.contentBasket().length;
+    page.counter = appData.checkContentBasket().length;
 });
 
 // Предварительный просмотр карточки
-events.on('card:select', (item: WebItem) => {
+events.on('card:select', (item: IWebItem) => {
     appData.setPreview(item);
 });
 
-events.on('preview:changed', (item: WebItem) => {
+events.on('preview:changed', (item: IWebItem) => {
     if (item) {
         const card = new Card('card', cloneTemplate(cardPreviewTemplate), {
             onClick: () => {
@@ -74,22 +74,23 @@ events.on('preview:changed', (item: WebItem) => {
                 category: item.category,
                 description: item.description,
                 price: item.price,
-                button: appData.checkBasket(item) ? 'Убрать' : 'Купить',
+                button: appData.checkBasket(item) ? 'Убрать' : 'Купить'
             }),
         })
+        console.log(card)
     } else {
         modal.close();
     }
 });
 
 // Добавить товар в корзину
-events.on('webitem:added', (item: WebItem) => {
+events.on('webitem:added', (item: IWebItem) => {
     appData.throwInBasket(item);
     modal.close();
 })
 
 // Удалить товар из корзины
-events.on('webitem:delete', (item: WebItem) => {
+events.on('webitem:delete', (item: IWebItem) => {
     appData.removeInBasket(item.id);
     modal.close();
 })
@@ -97,7 +98,7 @@ events.on('webitem:delete', (item: WebItem) => {
 // Открыть модальное окно с заказом
 events.on('order:open', () => {
     order.setClass('card');
-    appData.dataPayment('card');
+    appData.setPayment('card');
     modal.render({
         content: order.render({
             address: '',
@@ -133,7 +134,7 @@ events.on('contacts:open', () => {
 
 // Выбрать способ оплаты
 events.on('payment:changed', (data: { target: PaymentMethod }) => {
-    appData.dataPayment(data.target);
+    appData.setPayment(data.target);
 });
 
 // Изменилось состояние валидации заказа
@@ -160,10 +161,10 @@ events.on(/^contacts\..*:change/,
         appData.setOrderField(data.field, data.value);
     });
 
-// Изменился адресс доставки
+// Изменился адрес доставки
 events.on('order.address:change',
     (data: { value: string }) => {
-        appData.dataAddress(data.value);
+        appData.setAddress(data.value);
     });
 
 // Открыть корзину
@@ -175,7 +176,7 @@ events.on('basket:open', () => {
 
 // Отображение содержимого корзины
 events.on('itemsBasket:changed', () => {
-    const contentBasket = appData.contentBasket();
+    const contentBasket = appData.checkContentBasket();
     page.counter = contentBasket.length;
     let total = 0;
     basket.items = contentBasket.map((product, index) => {
@@ -214,8 +215,8 @@ events.on('contacts:submit', () => {
 
 // Изменились данные в корзине
 events.on('basket:change', () => {
-    page.counter = appData.contentBasket().length;
-    basket.items = appData.contentBasket().map((product, index) => {
+    page.counter = appData.checkContentBasket().length;
+    basket.items = appData.checkContentBasket().map((product, index) => {
         const card = new CardBasket(index, cloneTemplate(cardBasketTemplate), {
             onClick: () => {
                 appData.removeInBasket(product.id);
