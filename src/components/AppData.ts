@@ -6,15 +6,6 @@ export type CatalogChangeEvent = {
     catalog: IWebItem[]
 };
 
-// export class WebItem extends Model<IWebItem>{
-//     id: string;
-//     description: string;
-//     image: string;
-//     title: string;
-//     category: string;
-//     price: number | null;
-// }
-
 export class AppState extends Model<IAppState> {
     basket: IWebItem[] = [];
     catalog: IWebItem[] = [];
@@ -31,12 +22,12 @@ export class AppState extends Model<IAppState> {
 
     throwInBasket(item: IWebItem): void {
         this.basket.push(item);
-        this.emitChanges('itemsBasket:changed');
+        this.emitChanges('basket:change');
     }
 
     removeInBasket(id: string): void {
         this.basket = this.basket.filter((item) => item.id !== id);
-        this.emitChanges('itemsBasket:changed');
+        this.emitChanges('basket:change');
     }
 
     clearOrder(): void {
@@ -53,7 +44,7 @@ export class AppState extends Model<IAppState> {
     clearBasket(): void {
         this.basket = [];
         this.clearOrder();
-        this.emitChanges('itemsBasket:changed');
+        this.emitChanges('basket:change');
     }
 
     getTotal() {

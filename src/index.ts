@@ -175,10 +175,9 @@ events.on('basket:open', () => {
 });
 
 // Отображение содержимого корзины
-events.on('itemsBasket:changed', () => {
+events.on('basket:change', () => {
     const contentBasket = appData.checkContentBasket();
     page.counter = contentBasket.length;
-    let total = 0;
     basket.items = contentBasket.map((product, index) => {
         const card = new CardBasket(index, cloneTemplate(cardBasketTemplate), {
             onClick: () => {
@@ -186,10 +185,9 @@ events.on('itemsBasket:changed', () => {
                 basket.total = appData.getTotal();
             }
         });
-        total = total + product.price;
         return card.render({ title: product.title, price: product.price });
     });
-    basket.total = total;
+   
 });
 
 // Отправить данные о пользователе на сервер
